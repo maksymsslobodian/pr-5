@@ -1,0 +1,129 @@
+import random
+import time
+
+
+def generate_array(length, min_value, max_value):
+    return [random.randint(min_value, max_value) for _ in range(length)]
+
+
+def generate_float_array(length, min_value, max_value):
+    return [random.uniform(min_value, max_value) for _ in range(length)]
+
+
+def print_array(array):
+    formatted_elements = [
+        f"[cell - {i},value - {val}]" for i, val in enumerate(array)
+    ]
+    print("{" + ",".join(formatted_elements) + "}")
+
+
+def bubble_sort(array, ascending=True):
+    n = len(array)
+    for i in range(n - 1):
+        for j in range(n - i - 1):
+            need_swap = (
+                (array[j] > array[j + 1])
+                if ascending
+                else (array[j] < array[j + 1])
+            )
+            if need_swap:
+                array[j], array[j + 1] = array[j + 1], array[j]
+
+
+def insertion_sort(array, ascending=True):
+    n = len(array)
+    for i in range(1, n):
+        key = array[i]
+        j = i - 1
+        while j >= 0 and ((array[j] > key) if ascending else (array[j] < key)):
+            array[j + 1] = array[j]
+            j -= 1
+        array[j + 1] = key
+
+
+def selection_sort(array, ascending=True):
+    n = len(array)
+    for i in range(n - 1):
+        target_index = i
+        for j in range(i + 1, n):
+            condition = (
+                (array[j] < array[target_index])
+                if ascending
+                else (array[j] > array[target_index])
+            )
+            if condition:
+                target_index = j
+        array[i], array[target_index] = array[target_index], array[i]
+
+
+def partition(array, low, high, ascending):
+    pivot = array[high]
+    i = low
+    for j in range(low, high):
+        if ascending:
+            need_move = array[j] < pivot
+        else:
+            need_move = array[j] > pivot
+        if need_move:
+            array[i], array[j] = array[j], array[i]
+            i += 1
+    array[i], array[high] = array[high], array[i]
+    return i
+
+
+def quick_sort(array, ascending=True, low=0, high=None):
+    if high is None:
+        high = len(array) - 1
+    if low < high:
+        p = partition(array, low, high, ascending)
+        quick_sort(array, ascending, low, p - 1)
+        quick_sort(array, ascending, p + 1, high)
+
+
+def is_sorted(array, ascending=True):
+    for i in range(len(array) - 1):
+        if ascending and array[i] > array[i + 1]:
+            return False
+        if not ascending and array[i] < array[i + 1]:
+            return False
+    return True
+
+
+def measure_time(sort_function, array, ascending=True):
+    copy = array.copy()
+    start = time.perf_counter()
+    sort_function(copy, ascending)
+    end = time.perf_counter()
+    return end - start
+
+
+def compare_algorithms():
+    for size in (1_000, 10_000, 100_000):
+        array = generate_float_array(size, -1000, 1000)
+        print(f"\nРозмір масиву: {size}")
+        print(f"QuickSort:     {measure_time(quick_sort, array):.4f} с")
+        if size <= 10_000:
+            print(f"Bubble sort:   {measure_time(bubble_sort, array):.4f} с")
+            print(f"Insertion:     {measure_time(insertion_sort, array):.4f} с")
+            print(f"Selection:     {measure_time(selection_sort, array):.4f} с")
+
+
+if __name__ == "__main__":
+    original_array = generate_array(8, -10, 20)
+
+    print("Оригінальний масив:")
+    print_array(original_array)
+
+    arr1 = original_array.copy()
+    quick_sort(arr1, ascending=True)
+    print("\nQuickSort (за зростанням):")
+    print_array(arr1)
+    print("Відсортовано:", is_sorted(arr1, True))
+
+    arr2 = original_array.copy()
+    quick_sort(arr2, ascending=False)
+    print("\nQuickSort (за спаданням):")
+    print_array(arr2)
+    print("Відсортовано:", is_sorted(arr2, False))
+
+    compare_algorithms()
